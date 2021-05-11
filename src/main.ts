@@ -1,16 +1,46 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import {exec} from '@actions/exec'
+import {getOctokit} from '@actions/github'
+import {downloadTool, extractZip} from '@actions/tool-cache'
+import {parse} from 'shell-quote'
+import stylua from './stylua'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
+    const token = core.getInput('token')
+    const version = core.getInput('version')
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const releases = await stylua.getReleases(token)
 
-    core.setOutput('time', new Date().toTimeString())
+    core.debug(
+      `Retrieving matching release for user input: ${version ?? 'LATEST'}`
+    )
+    const release = stylua.chooseRelease(version, releases)
+
+    if (!release) {
+      throw new Error(`Could not find release for version ${version}`)
+    }
+
+    core.debug(`Chose release ${release.tag_name}`)
+    const asset = stylua.chooseAsset(release)
+
+    if (!asset) {
+      throw new Error(
+        `Could not find asset for ${release.tag_name} on platform ${process.platform}`
+      )
+    }
+
+    core.debug(`Chose asset ${asset.browser_download_url}`)
+
+    const downloadedPath = await downloadTool(asset.browser_download_url)
+    const extractedPath = await extractZip(downloadedPath)
+    core.addPath(extractedPath)
+
+    const args = core.getInput('args')
+    const escapedArgs = parse(args)
+    core.debug(`Running stylua with arguments: ${escapedArgs}`)
+
+    await exec(escapedArgs)
   } catch (error) {
     core.setFailed(error.message)
   }

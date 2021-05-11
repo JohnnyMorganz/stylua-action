@@ -25,10 +25,17 @@
   "author": "JohnnyMorganz",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.2.6"
+    "@actions/core": "^1.2.6",
+    "@actions/exec": "^1.0.4",
+    "@actions/github": "^4.0.0",
+    "@actions/tool-cache": "^1.6.1",
+    "semver": "^7.3.5",
+    "shell-quote": "^1.7.2"
   },
   "devDependencies": {
     "@types/node": "^14.14.9",
+    "@types/semver": "^7.3.5",
+    "@types/shell-quote": "^1.7.0",
     "@typescript-eslint/parser": "^4.8.1",
     "@vercel/ncc": "^0.25.1",
     "eslint": "^7.17.0",
