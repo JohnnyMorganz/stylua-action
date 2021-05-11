@@ -25,7 +25,7 @@ GitHub token. Required since the binary is downloaded from GitHub releases (to s
 
 The arguments to pass to the StyLua binary
 
-### `version` (Optional)
+#### `version` (Optional)
 
 The version of StyLua to use. If not specified, installs the latest release.
 
