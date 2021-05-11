@@ -34,7 +34,6 @@ function chooseRelease(
   return releases.find(release => semver.satisfies(release.tag_name, version))
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type Matcher = (name: string) => boolean
 
 const getFilenameMatcher: () => Matcher = () => {
