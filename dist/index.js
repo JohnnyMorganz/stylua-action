@@ -41,33 +41,48 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(2186));
 const exec_1 = __webpack_require__(1514);
-const tool_cache_1 = __webpack_require__(7784);
+const tc = __importStar(__webpack_require__(7784));
 const stylua_1 = __importDefault(__webpack_require__(2256));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token');
             const version = core.getInput('version');
-            const releases = yield stylua_1.default.getReleases(token);
-            core.debug(`Retrieving matching release for user input: ${version !== null && version !== void 0 ? version : 'LATEST'}`);
-            const release = stylua_1.default.chooseRelease(version, releases);
-            if (!release) {
-                throw new Error(`Could not find release for version ${version}`);
+            // See if we already have the tool installed
+            core.debug(`Looking for cached version of binary with version ${version}`);
+            const styluaDirectory = tc.find('stylua', version);
+            if (styluaDirectory) {
+                core.debug(`Found cached version of stylua: ${styluaDirectory}`);
+                core.addPath(styluaDirectory);
             }
-            core.debug(`Chose release ${release.tag_name}`);
-            const asset = stylua_1.default.chooseAsset(release);
-            if (!asset) {
-                throw new Error(`Could not find asset for ${release.tag_name} on platform ${process.platform}`);
+            else {
+                core.debug('No cached version found, downloading new release');
+                const releases = yield stylua_1.default.getReleases(token);
+                core.debug(`Retrieving matching release for user input: ${version !== null && version !== void 0 ? version : 'LATEST'}`);
+                const release = stylua_1.default.chooseRelease(version, releases);
+                if (!release) {
+                    throw new Error(`Could not find release for version ${version}`);
+                }
+                core.debug(`Chose release ${release.tag_name}`);
+                const asset = stylua_1.default.chooseAsset(release);
+                if (!asset) {
+                    throw new Error(`Could not find asset for ${release.tag_name} on platform ${process.platform}`);
+                }
+                core.debug(`Chose asset ${asset.browser_download_url}`);
+                const downloadedPath = yield tc.downloadTool(asset.browser_download_url);
+                const extractedPath = yield tc.extractZip(downloadedPath);
+                yield tc.cacheDir(extractedPath, 'stylua', release.tag_name);
+                core.addPath(extractedPath);
+                if (process.platform === 'darwin' || process.platform === 'linux') {
+                    yield exec_1.exec(`chmod +x ${extractedPath}/stylua`);
+                }
             }
-            core.debug(`Chose asset ${asset.browser_download_url}`);
-            const downloadedPath = yield tool_cache_1.downloadTool(asset.browser_download_url);
-            const extractedPath = yield tool_cache_1.extractZip(downloadedPath);
-            core.addPath(extractedPath);
             const args = core.getInput('args');
             core.debug(`Running stylua with arguments: ${args}`);
             yield exec_1.exec(`stylua ${args}`);
         }
         catch (error) {
+            core.error(error);
             core.setFailed(error.message);
         }
     });
@@ -112,7 +127,6 @@ function getReleases(token) {
 function chooseRelease(version, releases) {
     return releases.find(release => semver_1.default.satisfies(release.tag_name, version));
 }
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getFilenameMatcher = () => {
     switch (process.platform) {
         case 'win32':
