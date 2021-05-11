@@ -1,11 +1,15 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'StyLua'
+description: 'GitHub Action to run StyLua, an opinionated Lua code formatter'
+author: 'JohnnyMorganz'
 inputs:
-  milliseconds: # change this
+  token:
+    description: 'The GITHUB_SECRET token'
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  args:
+    description: 'CLI Arguments to pass to StyLua'
+    required: true
+  version:
+    description: 'The version of StyLua to run'
 runs:
   using: 'node12'
   main: 'dist/index.js'
