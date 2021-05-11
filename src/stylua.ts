@@ -19,8 +19,12 @@ async function getReleases(token: string): Promise<GitHubRelease[]> {
   })
 
   // Sort by latest release first
-  releases.sort((a, b) => -semver.compare(a.tag_name, b.tag_name))
+  releases.sort((a, b) => semver.rcompare(a.tag_name, b.tag_name))
   return releases
+}
+
+function getLatestVersion(releases: GitHubRelease[]): string | null {
+  return semver.clean(releases[0].tag_name)
 }
 
 function chooseRelease(
@@ -53,6 +57,7 @@ function chooseAsset(release: GitHubRelease): GitHubAsset | undefined {
 
 export default {
   getReleases,
+  getLatestVersion,
   chooseRelease,
   chooseAsset
 }

@@ -1,12 +1,29 @@
 import * as core from '@actions/core'
 import {exec} from '@actions/exec'
 import * as tc from '@actions/tool-cache'
+import * as semver from 'semver'
 import stylua from './stylua'
 
 async function run(): Promise<void> {
   try {
     const token = core.getInput('token')
-    const version = core.getInput('version')
+    let version = semver.clean(core.getInput('version'))
+
+    let releases
+    if (!version || version === '') {
+      core.debug(
+        'No version provided, or version provided is malformed, finding latest release version'
+      )
+      releases = await stylua.getReleases(token)
+
+      const latestVersion = stylua.getLatestVersion(releases)
+      if (!latestVersion) {
+        throw new Error(
+          'Could not find latest release version. Please specify an explicit version'
+        )
+      }
+      version = latestVersion
+    }
 
     // See if we already have the tool installed
     core.debug(`Looking for cached version of binary with version ${version}`)
@@ -16,11 +33,11 @@ async function run(): Promise<void> {
       core.addPath(styluaDirectory)
     } else {
       core.debug('No cached version found, downloading new release')
-      const releases = await stylua.getReleases(token)
 
-      core.debug(
-        `Retrieving matching release for user input: ${version ?? 'LATEST'}`
-      )
+      // If we haven't already looked for the releases, then load them up
+      if (!releases) releases = await stylua.getReleases(token)
+
+      core.debug(`Retrieving matching release for user input: ${version}`)
       const release = stylua.chooseRelease(version, releases)
 
       if (!release) {
@@ -40,7 +57,7 @@ async function run(): Promise<void> {
 
       const downloadedPath = await tc.downloadTool(asset.browser_download_url)
       const extractedPath = await tc.extractZip(downloadedPath)
-      await tc.cacheDir(extractedPath, 'stylua', release.tag_name)
+      await tc.cacheDir(extractedPath, 'stylua', version)
       core.addPath(extractedPath)
 
       if (process.platform === 'darwin' || process.platform === 'linux') {
