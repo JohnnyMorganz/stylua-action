@@ -9,11 +9,13 @@ async function run(): Promise<void> {
     const version = core.getInput('version')
 
     // See if we already have the tool installed
+    core.debug(`Looking for cached version of binary with version ${version}`)
     const styluaDirectory = tc.find('stylua', version)
     if (styluaDirectory) {
       core.debug(`Found cached version of stylua: ${styluaDirectory}`)
       core.addPath(styluaDirectory)
     } else {
+      core.debug('No cached version found, downloading new release')
       const releases = await stylua.getReleases(token)
 
       core.debug(
@@ -51,6 +53,7 @@ async function run(): Promise<void> {
 
     await exec(`stylua ${args}`)
   } catch (error) {
+    core.error(error)
     core.setFailed(error.message)
   }
 }
