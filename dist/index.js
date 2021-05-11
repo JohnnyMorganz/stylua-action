@@ -42,12 +42,23 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(2186));
 const exec_1 = __webpack_require__(1514);
 const tc = __importStar(__webpack_require__(7784));
+const semver = __importStar(__webpack_require__(1383));
 const stylua_1 = __importDefault(__webpack_require__(2256));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token');
-            const version = core.getInput('version');
+            let version = semver.clean(core.getInput('version'));
+            let releases;
+            if (!version || version === '') {
+                core.debug('No version provided, or version provided is malformed, finding latest release version');
+                releases = yield stylua_1.default.getReleases(token);
+                const latestVersion = stylua_1.default.getLatestVersion(releases);
+                if (!latestVersion) {
+                    throw new Error('Could not find latest release version. Please specify an explicit version');
+                }
+                version = latestVersion;
+            }
             // See if we already have the tool installed
             core.debug(`Looking for cached version of binary with version ${version}`);
             const styluaDirectory = tc.find('stylua', version);
@@ -57,8 +68,10 @@ function run() {
             }
             else {
                 core.debug('No cached version found, downloading new release');
-                const releases = yield stylua_1.default.getReleases(token);
-                core.debug(`Retrieving matching release for user input: ${version !== null && version !== void 0 ? version : 'LATEST'}`);
+                // If we haven't already looked for the releases, then load them up
+                if (!releases)
+                    releases = yield stylua_1.default.getReleases(token);
+                core.debug(`Retrieving matching release for user input: ${version}`);
                 const release = stylua_1.default.chooseRelease(version, releases);
                 if (!release) {
                     throw new Error(`Could not find release for version ${version}`);
@@ -71,7 +84,7 @@ function run() {
                 core.debug(`Chose asset ${asset.browser_download_url}`);
                 const downloadedPath = yield tc.downloadTool(asset.browser_download_url);
                 const extractedPath = yield tc.extractZip(downloadedPath);
-                yield tc.cacheDir(extractedPath, 'stylua', release.tag_name);
+                yield tc.cacheDir(extractedPath, 'stylua', version);
                 core.addPath(extractedPath);
                 if (process.platform === 'darwin' || process.platform === 'linux') {
                     yield exec_1.exec(`chmod +x ${extractedPath}/stylua`);
@@ -120,9 +133,12 @@ function getReleases(token) {
             repo: 'stylua'
         });
         // Sort by latest release first
-        releases.sort((a, b) => -semver_1.default.compare(a.tag_name, b.tag_name));
+        releases.sort((a, b) => semver_1.default.rcompare(a.tag_name, b.tag_name));
         return releases;
     });
+}
+function getLatestVersion(releases) {
+    return semver_1.default.clean(releases[0].tag_name);
 }
 function chooseRelease(version, releases) {
     return releases.find(release => semver_1.default.satisfies(release.tag_name, version));
@@ -145,6 +161,7 @@ function chooseAsset(release) {
 }
 exports.default = {
     getReleases,
+    getLatestVersion,
     chooseRelease,
     chooseAsset
 };
