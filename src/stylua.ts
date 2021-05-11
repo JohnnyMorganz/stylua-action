@@ -1,4 +1,3 @@
-import * as core from '@actions/core'
 import {getOctokit} from '@actions/github'
 import semver from 'semver'
 
@@ -12,7 +11,7 @@ interface GitHubRelease {
   assets: GitHubAsset[]
 }
 
-async function getReleases(token: string) {
+async function getReleases(token: string): Promise<GitHubRelease[]> {
   const octokit = getOctokit(token)
   const {data: releases} = await octokit.repos.listReleases({
     owner: 'JohnnyMorganz',
@@ -25,41 +24,31 @@ async function getReleases(token: string) {
 }
 
 function chooseRelease(
-  versionReq: string,
+  version: string,
   releases: GitHubRelease[]
-): GitHubRelease | null {
-  for (const release of releases) {
-    if (semver.satisfies(release.tag_name, versionReq)) {
-      return release
-    }
-  }
-
-  return null
+): GitHubRelease | undefined {
+  return releases.find(release => semver.satisfies(release.tag_name, version))
 }
 
-function chooseAsset(release: GitHubRelease): GitHubAsset | null {
-  let platformMatcher: (name: string) => boolean
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type Matcher = (name: string) => boolean
 
-  if (process.platform === 'win32') {
-    platformMatcher = name =>
-      name.includes('windows') ||
-      name.includes('win64') ||
-      name.includes('win32')
-  } else if (process.platform === 'darwin') {
-    platformMatcher = name => name.includes('macos')
-  } else if (process.platform === 'linux') {
-    platformMatcher = name => name.includes('linux')
-  } else {
-    throw new Error(`Unsupported platform "${process.platform}"`)
+const getFilenameMatcher: () => Matcher = () => {
+  switch (process.platform) {
+    case 'win32':
+      return name => name.includes('win64')
+    case 'linux':
+      return name => name.includes('linux')
+    case 'darwin':
+      return name => name.includes('macos')
+    default:
+      throw new Error('Platform not supported')
   }
+}
 
-  for (const asset of release.assets) {
-    if (platformMatcher(asset.name)) {
-      return asset
-    }
-  }
-
-  return null
+function chooseAsset(release: GitHubRelease): GitHubAsset | undefined {
+  const matcher = getFilenameMatcher()
+  return release.assets.find(asset => matcher(asset.name))
 }
 
 export default {

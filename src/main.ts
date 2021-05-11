@@ -1,8 +1,6 @@
 import * as core from '@actions/core'
 import {exec} from '@actions/exec'
-import {getOctokit} from '@actions/github'
 import {downloadTool, extractZip} from '@actions/tool-cache'
-import {parse} from 'shell-quote'
 import stylua from './stylua'
 
 async function run(): Promise<void> {
@@ -37,10 +35,9 @@ async function run(): Promise<void> {
     core.addPath(extractedPath)
 
     const args = core.getInput('args')
-    const escapedArgs = parse(args)
-    core.debug(`Running stylua with arguments: ${escapedArgs}`)
+    core.debug(`Running stylua with arguments: ${args}`)
 
-    await exec(escapedArgs)
+    await exec(`stylua ${args}`)
   } catch (error) {
     core.setFailed(error.message)
   }
