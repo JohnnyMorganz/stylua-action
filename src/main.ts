@@ -70,7 +70,6 @@ async function run(): Promise<void> {
 
     await exec(`stylua ${args}`)
   } catch (error) {
-    core.error(error)
     core.setFailed(error.message)
   }
 }

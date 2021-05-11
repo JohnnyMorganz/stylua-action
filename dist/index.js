@@ -95,7 +95,6 @@ function run() {
             yield exec_1.exec(`stylua ${args}`);
         }
         catch (error) {
-            core.error(error);
             core.setFailed(error.message);
         }
     });
