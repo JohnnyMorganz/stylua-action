@@ -8,7 +8,7 @@ Installs the StyLua binary (from GitHub releases), and caches it. Any StyLua com
 
 ```yaml
 - uses: actions/checkout@v2
-- uses: JohnnyMorganz/stylua-action@v1
+- uses: JohnnyMorganz/stylua-action@1.0.0
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
     # CLI arguments
