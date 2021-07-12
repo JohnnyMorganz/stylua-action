@@ -13,6 +13,7 @@ Installs the StyLua binary (from GitHub releases), and caches it. Any StyLua com
     token: ${{ secrets.GITHUB_TOKEN }}
     # CLI arguments
     args: --check .
+    # Specify `version` to pin a specific version, otherwise action will always use latest version/automatically update
 ```
 
 ### Parameters
@@ -27,6 +28,8 @@ The arguments to pass to the StyLua binary
 
 #### `version` (Optional)
 
-The version of StyLua to use. If not specified, installs the latest release.
+The version of StyLua to use. Follows semver syntax.
+If not specified, installs the latest release.
+**It is recommended to pin your version so that updates to StyLua don't lead to unwanted changes in the action without explicitly updating.**
 
 Based off https://github.com/Roblox/setup-foreman, licensed under [MIT](https://github.com/Roblox/setup-foreman/blob/master/LICENSE.txt)
