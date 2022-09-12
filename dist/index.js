@@ -50,7 +50,7 @@ function run() {
             let version = semver.clean(core.getInput('version'));
             let releases;
             if (!version || version === '') {
-                core.debug('No version provided, or version provided is malformed, finding latest release version');
+                core.warning('No version provided, or version provided is malformed, using latest release version. We recommend pinning the version explicitly to handle changes in formatting');
                 releases = yield stylua_1.default.getReleases(token);
                 const latestVersion = stylua_1.default.getLatestVersion(releases);
                 if (!latestVersion) {
@@ -144,7 +144,7 @@ function chooseRelease(version, releases) {
 const getFilenameMatcher = () => {
     switch (process.platform) {
         case 'win32':
-            return name => name.includes('win64');
+            return name => name.includes('win64') || name.includes('windows');
         case 'linux':
             return name => name.includes('linux');
         case 'darwin':
