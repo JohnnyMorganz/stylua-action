@@ -10,12 +10,14 @@ async function run(): Promise<void> {
     let version = semver.clean(core.getInput('version'))
 
     let releases
-    if (!version || version === '') {
-      core.warning(
-        'No version provided, or version provided is malformed, using latest release version. We recommend pinning the version explicitly to handle changes in formatting'
-      )
-      releases = await stylua.getReleases(token)
+    if (!version || version === '' || version === 'latest') {
+      if (version !== 'latest') {
+        core.warning(
+          'No version provided, or version provided is malformed, using latest release version. We recommend pinning the version explicitly to handle changes in formatting'
+        )
+      }
 
+      releases = await stylua.getReleases(token)
       const latestVersion = stylua.getLatestVersion(releases)
       if (!latestVersion) {
         throw new Error(
