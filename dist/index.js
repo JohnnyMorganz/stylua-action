@@ -49,8 +49,10 @@ function run() {
             const token = core.getInput('token');
             let version = semver.clean(core.getInput('version'));
             let releases;
-            if (!version || version === '') {
-                core.warning('No version provided, or version provided is malformed, using latest release version. We recommend pinning the version explicitly to handle changes in formatting');
+            if (!version || version === '' || version === 'latest') {
+                if (version !== 'latest') {
+                    core.warning('No version provided, or version provided is malformed, using latest release version. We recommend pinning the version explicitly to handle changes in formatting');
+                }
                 releases = yield stylua_1.default.getReleases(token);
                 const latestVersion = stylua_1.default.getLatestVersion(releases);
                 if (!latestVersion) {
