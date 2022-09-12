@@ -11,8 +11,8 @@ async function run(): Promise<void> {
 
     let releases
     if (!version || version === '') {
-      core.debug(
-        'No version provided, or version provided is malformed, finding latest release version'
+      core.warning(
+        'No version provided, or version provided is malformed, using latest release version. We recommend pinning the version explicitly to handle changes in formatting'
       )
       releases = await stylua.getReleases(token)
 
