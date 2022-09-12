@@ -39,7 +39,7 @@ type Matcher = (name: string) => boolean
 const getFilenameMatcher: () => Matcher = () => {
   switch (process.platform) {
     case 'win32':
-      return name => name.includes('win64')
+      return name => name.includes('win64') || name.includes('windows')
     case 'linux':
       return name => name.includes('linux')
     case 'darwin':
