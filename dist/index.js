@@ -8,7 +8,11 @@ require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -88,12 +92,13 @@ function run() {
                 yield tc.cacheDir(extractedPath, 'stylua', version);
                 core.addPath(extractedPath);
                 if (process.platform === 'darwin' || process.platform === 'linux') {
-                    yield exec_1.exec(`chmod +x ${extractedPath}/stylua`);
+                    yield (0, exec_1.exec)(`chmod +x ${extractedPath}/stylua`);
                 }
             }
             const args = core.getInput('args');
             core.debug(`Running stylua with arguments: ${args}`);
-            yield exec_1.exec(`stylua ${args}`);
+            yield (0, exec_1.exec)(`stylua ${args}`);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }
         catch (error) {
             core.setFailed(error.message);
@@ -123,11 +128,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getFilenameMatcher = void 0;
 const github_1 = __nccwpck_require__(5438);
 const semver_1 = __importDefault(__nccwpck_require__(1383));
 function getReleases(token) {
     return __awaiter(this, void 0, void 0, function* () {
-        const octokit = github_1.getOctokit(token);
+        const octokit = (0, github_1.getOctokit)(token);
         const { data: releases } = yield octokit.repos.listReleases({
             owner: 'JohnnyMorganz',
             repo: 'stylua'
@@ -143,8 +149,8 @@ function getLatestVersion(releases) {
 function chooseRelease(version, releases) {
     return releases.find(release => semver_1.default.satisfies(release.tag_name, version));
 }
-const getFilenameMatcher = () => {
-    switch (process.platform) {
+const getPlatformMatcher = (platform) => {
+    switch (platform) {
         case 'win32':
             return name => name.includes('win64') || name.includes('windows');
         case 'linux':
@@ -155,8 +161,24 @@ const getFilenameMatcher = () => {
             throw new Error('Platform not supported');
     }
 };
+const getArchMatcher = (arch) => {
+    switch (arch) {
+        case 'x64':
+            return name => name.includes('x86_64');
+        case 'arm64':
+            return name => name.includes('aarch64');
+        default:
+            throw new Error('Arch not supported');
+    }
+};
+const getFilenameMatcher = (platform, arch) => {
+    const matchPlatform = getPlatformMatcher(platform);
+    const matchArch = getArchMatcher(arch);
+    return name => matchPlatform(name) && matchArch(name);
+};
+exports.getFilenameMatcher = getFilenameMatcher;
 function chooseAsset(release) {
-    const matcher = getFilenameMatcher();
+    const matcher = (0, exports.getFilenameMatcher)(process.platform, process.arch);
     return release.assets.find(asset => matcher(asset.name));
 }
 exports.default = {

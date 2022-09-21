@@ -34,10 +34,10 @@ function chooseRelease(
   return releases.find(release => semver.satisfies(release.tag_name, version))
 }
 
-type Matcher = (name: string) => boolean
+export type Matcher = (name: string) => boolean
 
-const getFilenameMatcher: () => Matcher = () => {
-  switch (process.platform) {
+const getPlatformMatcher = (platform: NodeJS.Platform): Matcher => {
+  switch (platform) {
     case 'win32':
       return name => name.includes('win64') || name.includes('windows')
     case 'linux':
@@ -49,8 +49,28 @@ const getFilenameMatcher: () => Matcher = () => {
   }
 }
 
+const getArchMatcher = (arch: string): Matcher => {
+  switch (arch) {
+    case 'x64':
+      return name => name.includes('x86_64')
+    case 'arm64':
+      return name => name.includes('aarch64')
+    default:
+      throw new Error('Arch not supported')
+  }
+}
+
+export const getFilenameMatcher = (
+  platform: NodeJS.Platform,
+  arch: string
+): Matcher => {
+  const matchPlatform = getPlatformMatcher(platform)
+  const matchArch = getArchMatcher(arch)
+  return name => matchPlatform(name) && matchArch(name)
+}
+
 function chooseAsset(release: GitHubRelease): GitHubAsset | undefined {
-  const matcher = getFilenameMatcher()
+  const matcher = getFilenameMatcher(process.platform, process.arch)
   return release.assets.find(asset => matcher(asset.name))
 }
 
