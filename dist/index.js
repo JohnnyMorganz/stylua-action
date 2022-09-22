@@ -128,7 +128,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getFilenameMatcher = void 0;
+exports.getFilenameMatcher = exports.getAssetFilenamePatternForPlatform = void 0;
 const github_1 = __nccwpck_require__(5438);
 const semver_1 = __importDefault(__nccwpck_require__(1383));
 function getReleases(token) {
@@ -149,32 +149,38 @@ function getLatestVersion(releases) {
 function chooseRelease(version, releases) {
     return releases.find(release => semver_1.default.satisfies(release.tag_name, version));
 }
-const getPlatformMatcher = (platform) => {
+const getAssetFilenamePatternForPlatform = (platform, machine) => {
+    let platformPattern;
     switch (platform) {
         case 'win32':
-            return name => name.includes('win64') || name.includes('windows');
+            platformPattern = '(windows|win64)';
+            break;
         case 'linux':
-            return name => name.includes('linux');
+            platformPattern = 'linux';
+            break;
         case 'darwin':
-            return name => name.includes('macos');
+            platformPattern = 'macos';
+            break;
         default:
-            throw new Error('Platform not supported');
+            throw new Error('platform not supported');
     }
-};
-const getArchMatcher = (arch) => {
-    switch (arch) {
-        case 'x64':
-            return name => name.includes('x86_64');
+    let archPattern;
+    switch (machine) {
         case 'arm64':
-            return name => name.includes('aarch64');
+            archPattern = 'aarch64';
+            break;
+        case 'x64':
+            archPattern = 'x86_64';
+            break;
         default:
-            throw new Error('Arch not supported');
+            archPattern = '';
     }
+    return new RegExp(`stylua(-[\\dw\\-\\.]+)?-${platformPattern}(-${archPattern})?.zip`);
 };
+exports.getAssetFilenamePatternForPlatform = getAssetFilenamePatternForPlatform;
 const getFilenameMatcher = (platform, arch) => {
-    const matchPlatform = getPlatformMatcher(platform);
-    const matchArch = getArchMatcher(arch);
-    return name => matchPlatform(name) && matchArch(name);
+    const pattern = (0, exports.getAssetFilenamePatternForPlatform)(platform, arch);
+    return name => pattern.test(name);
 };
 exports.getFilenameMatcher = getFilenameMatcher;
 function chooseAsset(release) {

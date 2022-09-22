@@ -36,37 +36,49 @@ function chooseRelease(
 
 export type Matcher = (name: string) => boolean
 
-const getPlatformMatcher = (platform: NodeJS.Platform): Matcher => {
+export const getAssetFilenamePatternForPlatform = (
+  platform: NodeJS.Platform,
+  machine: string
+): RegExp => {
+  let platformPattern
+
   switch (platform) {
     case 'win32':
-      return name => name.includes('win64') || name.includes('windows')
+      platformPattern = '(windows|win64)'
+      break
     case 'linux':
-      return name => name.includes('linux')
+      platformPattern = 'linux'
+      break
     case 'darwin':
-      return name => name.includes('macos')
+      platformPattern = 'macos'
+      break
     default:
-      throw new Error('Platform not supported')
+      throw new Error('platform not supported')
   }
-}
 
-const getArchMatcher = (arch: string): Matcher => {
-  switch (arch) {
-    case 'x64':
-      return name => name.includes('x86_64')
+  let archPattern
+  switch (machine) {
     case 'arm64':
-      return name => name.includes('aarch64')
+      archPattern = 'aarch64'
+      break
+    case 'x64':
+      archPattern = 'x86_64'
+      break
     default:
-      throw new Error('Arch not supported')
+      archPattern = ''
   }
+
+  return new RegExp(
+    `stylua(-[\\dw\\-\\.]+)?-${platformPattern}(-${archPattern})?.zip`
+  )
 }
 
 export const getFilenameMatcher = (
   platform: NodeJS.Platform,
   arch: string
 ): Matcher => {
-  const matchPlatform = getPlatformMatcher(platform)
-  const matchArch = getArchMatcher(arch)
-  return name => matchPlatform(name) && matchArch(name)
+  const pattern = getAssetFilenamePatternForPlatform(platform, arch)
+  return name => pattern.test(name)
 }
 
 function chooseAsset(release: GitHubRelease): GitHubAsset | undefined {
