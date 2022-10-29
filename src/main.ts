@@ -7,10 +7,11 @@ import stylua from './stylua'
 async function run(): Promise<void> {
   try {
     const token = core.getInput('token')
-    let version = semver.clean(core.getInput('version'))
+    const versionString = core.getInput('version')
+    let version = semver.clean(versionString)
 
     let releases
-    if (!version || version === '' || version === 'latest') {
+    if (!version || versionString === '' || versionString === 'latest') {
       if (version !== 'latest') {
         core.warning(
           'No version provided, or version provided is malformed, using latest release version. We recommend pinning the version explicitly to handle changes in formatting'
