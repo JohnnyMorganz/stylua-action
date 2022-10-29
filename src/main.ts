@@ -9,6 +9,7 @@ async function run(): Promise<void> {
     const token = core.getInput('token')
     const versionString = core.getInput('version')
     let version = semver.clean(versionString)
+    core.debug(`Set version: "${versionString}", resolved as ${version}`)
 
     let releases
     if (!version || versionString === '' || versionString === 'latest') {
