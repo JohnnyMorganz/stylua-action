@@ -12,7 +12,7 @@ async function run(): Promise<void> {
 
     let releases
     if (!version || versionString === '' || versionString === 'latest') {
-      if (version !== 'latest') {
+      if (versionString !== 'latest') {
         core.warning(
           'No version provided, or version provided is malformed, using latest release version. We recommend pinning the version explicitly to handle changes in formatting'
         )
