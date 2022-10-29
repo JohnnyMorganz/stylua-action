@@ -21,11 +21,21 @@ jobs:
       - uses: actions/checkout@v3
       - run: npm ci
       - run: npm test
-  smoketest: # make sure the action works on a clean machine without building
+  # make sure the action works on a clean machine without building
+  smoketest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: ./
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --check ./test
+  smoketest_latest_version_provided:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        with:
+          version: latest
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --check ./test
