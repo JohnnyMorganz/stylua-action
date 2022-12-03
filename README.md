@@ -28,10 +28,11 @@ GitHub token. Required since the binary is downloaded from GitHub releases (to s
 
 The arguments to pass to the StyLua binary
 
-#### `version` (Optional)
+#### `version` (Required)
 
 The version of StyLua to use. Follows semver syntax.
-If not specified, installs the latest release.
-**It is recommended to pin your version so that updates to StyLua don't lead to unwanted changes in the action without explicitly updating.**
+Alternatively, supply `latest` to use the latest available release.
+
+**NOTE: using `latest` may cause the action to fail if StyLua updates and the formatting changes!**
 
 Based off https://github.com/Roblox/setup-foreman, licensed under [MIT](https://github.com/Roblox/setup-foreman/blob/master/LICENSE.txt)

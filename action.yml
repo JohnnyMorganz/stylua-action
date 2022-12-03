@@ -12,7 +12,8 @@ inputs:
     description: 'CLI Arguments to pass to StyLua'
     required: true
   version:
-    description: 'The version of StyLua to run'
+    description: 'The version of StyLua to run. Use `latest` to pull the latest version'
+    required: true
 runs:
   using: 'node16'
   main: 'dist/index.js'

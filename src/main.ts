@@ -12,13 +12,7 @@ async function run(): Promise<void> {
     core.debug(`Set version: "${versionString}", resolved as ${version}`)
 
     let releases
-    if (!version || versionString === '' || versionString === 'latest') {
-      if (versionString !== 'latest') {
-        core.warning(
-          'No version provided, or version provided is malformed, using latest release version. We recommend pinning the version explicitly to handle changes in formatting'
-        )
-      }
-
+    if (!version || versionString === 'latest') {
       releases = await stylua.getReleases(token)
       const latestVersion = stylua.getLatestVersion(releases)
       if (!latestVersion) {
@@ -31,7 +25,7 @@ async function run(): Promise<void> {
 
     // See if we already have the tool installed
     core.debug(`Looking for cached version of binary with version ${version}`)
-    const styluaDirectory = tc.find('stylua', version)
+    const styluaDirectory = tc.find('stylua', version ?? versionString)
     if (styluaDirectory) {
       core.debug(`Found cached version of stylua: ${styluaDirectory}`)
       core.addPath(styluaDirectory)
