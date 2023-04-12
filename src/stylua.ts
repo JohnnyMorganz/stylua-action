@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import {getOctokit} from '@actions/github'
 import semver from 'semver'
 
@@ -23,14 +24,15 @@ async function getReleases(token: string): Promise<GitHubRelease[]> {
   return releases
 }
 
-function getLatestVersion(releases: GitHubRelease[]): string | null {
-  return semver.clean(releases[0].tag_name)
-}
-
 function chooseRelease(
   version: string,
   releases: GitHubRelease[]
 ): GitHubRelease | undefined {
+  if (version === '') {
+    core.debug('No version provided, finding latest release version')
+  } else if (version === 'latest') {
+    version = ''
+  }
   return releases.find(release => semver.satisfies(release.tag_name, version))
 }
 
@@ -88,7 +90,6 @@ function chooseAsset(release: GitHubRelease): GitHubAsset | undefined {
 
 export default {
   getReleases,
-  getLatestVersion,
   chooseRelease,
   chooseAsset
 }

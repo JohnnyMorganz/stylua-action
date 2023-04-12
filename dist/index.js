@@ -45,42 +45,27 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
 const exec_1 = __nccwpck_require__(1514);
 const tc = __importStar(__nccwpck_require__(7784));
-const semver = __importStar(__nccwpck_require__(1383));
 const stylua_1 = __importDefault(__nccwpck_require__(2256));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput('token');
-            const versionString = core.getInput('version');
-            let version = semver.clean(versionString);
-            core.debug(`Set version: "${versionString}", resolved as ${version}`);
-            let releases;
-            if (!version || versionString === 'latest') {
-                releases = yield stylua_1.default.getReleases(token);
-                const latestVersion = stylua_1.default.getLatestVersion(releases);
-                if (!latestVersion) {
-                    throw new Error('Could not find latest release version. Please specify an explicit version');
-                }
-                version = latestVersion;
+            const version = core.getInput('version').trim();
+            const releases = yield stylua_1.default.getReleases(token);
+            const release = stylua_1.default.chooseRelease(version, releases);
+            if (!release) {
+                throw new Error(`Could not find release for version ${version}`);
             }
+            core.debug(`Chose release ${release.tag_name}`);
             // See if we already have the tool installed
-            core.debug(`Looking for cached version of binary with version ${version}`);
-            const styluaDirectory = tc.find('stylua', version !== null && version !== void 0 ? version : versionString);
+            core.debug(`Looking for cached version of binary with version ${release.tag_name}`);
+            const styluaDirectory = tc.find('stylua', release.tag_name);
             if (styluaDirectory) {
                 core.debug(`Found cached version of stylua: ${styluaDirectory}`);
                 core.addPath(styluaDirectory);
             }
             else {
                 core.debug('No cached version found, downloading new release');
-                // If we haven't already looked for the releases, then load them up
-                if (!releases)
-                    releases = yield stylua_1.default.getReleases(token);
-                core.debug(`Retrieving matching release for user input: ${version}`);
-                const release = stylua_1.default.chooseRelease(version, releases);
-                if (!release) {
-                    throw new Error(`Could not find release for version ${version}`);
-                }
-                core.debug(`Chose release ${release.tag_name}`);
                 const asset = stylua_1.default.chooseAsset(release);
                 if (!asset) {
                     throw new Error(`Could not find asset for ${release.tag_name} on platform ${process.platform}`);
@@ -114,6 +99,29 @@ run();
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -128,6 +136,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getFilenameMatcher = exports.getAssetFilenamePatternForPlatform = void 0;
+const core = __importStar(__nccwpck_require__(2186));
 const github_1 = __nccwpck_require__(5438);
 const semver_1 = __importDefault(__nccwpck_require__(1383));
 function getReleases(token) {
@@ -142,10 +151,13 @@ function getReleases(token) {
         return releases;
     });
 }
-function getLatestVersion(releases) {
-    return semver_1.default.clean(releases[0].tag_name);
-}
 function chooseRelease(version, releases) {
+    if (version === '') {
+        core.debug('No version provided, finding latest release version');
+    }
+    else if (version === 'latest') {
+        version = '';
+    }
     return releases.find(release => semver_1.default.satisfies(release.tag_name, version));
 }
 const getAssetFilenamePatternForPlatform = (platform, machine) => {
@@ -188,7 +200,6 @@ function chooseAsset(release) {
 }
 exports["default"] = {
     getReleases,
-    getLatestVersion,
     chooseRelease,
     chooseAsset
 };
