@@ -13,7 +13,7 @@ interface GitHubRelease {
 
 async function getReleases(token: string): Promise<GitHubRelease[]> {
   const octokit = getOctokit(token)
-  const {data: releases} = await octokit.repos.listReleases({
+  const {data: releases} = await octokit.rest.repos.listReleases({
     owner: 'JohnnyMorganz',
     repo: 'stylua'
   })
