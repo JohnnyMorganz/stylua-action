@@ -1,48 +1,31 @@
 import * as core from '@actions/core'
 import {exec} from '@actions/exec'
 import * as tc from '@actions/tool-cache'
-import * as semver from 'semver'
 import stylua from './stylua'
 
 async function run(): Promise<void> {
   try {
     const token = core.getInput('token')
-    const versionString = core.getInput('version')
-    let version = semver.clean(versionString)
-    core.debug(`Set version: "${versionString}", resolved as ${version}`)
+    const version = core.getInput('version').trim()
 
-    let releases
-    if (!version || versionString === 'latest') {
-      releases = await stylua.getReleases(token)
-      const latestVersion = stylua.getLatestVersion(releases)
-      if (!latestVersion) {
-        throw new Error(
-          'Could not find latest release version. Please specify an explicit version'
-        )
-      }
-      version = latestVersion
+    const releases = await stylua.getReleases(token)
+    const release = stylua.chooseRelease(version, releases)
+    if (!release) {
+      throw new Error(`Could not find release for version ${version}`)
     }
 
+    core.debug(`Chose release ${release.tag_name}`)
+
     // See if we already have the tool installed
-    core.debug(`Looking for cached version of binary with version ${version}`)
-    const styluaDirectory = tc.find('stylua', version ?? versionString)
+    core.debug(
+      `Looking for cached version of binary with version ${release.tag_name}`
+    )
+    const styluaDirectory = tc.find('stylua', release.tag_name)
     if (styluaDirectory) {
       core.debug(`Found cached version of stylua: ${styluaDirectory}`)
       core.addPath(styluaDirectory)
     } else {
       core.debug('No cached version found, downloading new release')
-
-      // If we haven't already looked for the releases, then load them up
-      if (!releases) releases = await stylua.getReleases(token)
-
-      core.debug(`Retrieving matching release for user input: ${version}`)
-      const release = stylua.chooseRelease(version, releases)
-
-      if (!release) {
-        throw new Error(`Could not find release for version ${version}`)
-      }
-
-      core.debug(`Chose release ${release.tag_name}`)
       const asset = stylua.chooseAsset(release)
 
       if (!asset) {
