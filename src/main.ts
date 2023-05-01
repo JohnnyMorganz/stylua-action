@@ -9,7 +9,10 @@ async function run(): Promise<void> {
     const version = core.getInput('version').trim()
 
     if (version === '') {
-      throw new Error(`The 'version' input must be specified for the action!`)
+      core.info(
+        'See https://github.com/JohnnyMorganz/stylua-action#usage for usage information'
+      )
+      throw new Error(`The 'version' input must be specified!`)
     }
 
     const releases = await stylua.getReleases(token)
