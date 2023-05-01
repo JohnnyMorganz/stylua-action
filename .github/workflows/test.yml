@@ -17,9 +17,9 @@ jobs:
       - name: Rebuild
         run: |
           npm run all
-      # - name: Ensure dist is updated
-      #   run: |
-      #     git diff-index --quiet HEAD
+      - name: Ensure dist is updated
+        run: |
+          git diff --exit-code
   test:
     runs-on: ubuntu-latest
     steps:
