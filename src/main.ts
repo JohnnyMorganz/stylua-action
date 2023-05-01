@@ -8,6 +8,10 @@ async function run(): Promise<void> {
     const token = core.getInput('token')
     const version = core.getInput('version').trim()
 
+    if (version === '') {
+      throw new Error(`The 'version' input must be specified for the action!`)
+    }
+
     const releases = await stylua.getReleases(token)
     const release = stylua.chooseRelease(version, releases)
     if (!release) {

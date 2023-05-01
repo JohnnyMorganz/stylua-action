@@ -51,6 +51,9 @@ function run() {
         try {
             const token = core.getInput('token');
             const version = core.getInput('version').trim();
+            if (version === '') {
+                throw new Error(`The 'version' input must be specified for the action!`);
+            }
             const releases = yield stylua_1.default.getReleases(token);
             const release = stylua_1.default.chooseRelease(version, releases);
             if (!release) {
