@@ -14,6 +14,8 @@ async function run(): Promise<void> {
       throw new Error(`Could not find release for version ${version}`)
     }
 
+    core.debug('test')
+
     core.debug(`Chose release ${release.tag_name}`)
 
     // See if we already have the tool installed
