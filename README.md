@@ -9,7 +9,7 @@ Installs the StyLua binary (from GitHub releases), and caches it. Any StyLua com
 ## Usage
 
 ```yaml
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: JohnnyMorganz/stylua-action@v3
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
