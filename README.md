@@ -10,7 +10,7 @@ Installs the StyLua binary (from GitHub releases), and caches it. Any StyLua com
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: JohnnyMorganz/stylua-action@v3
+- uses: JohnnyMorganz/stylua-action@v4
   with:
     token: ${{ secrets.GITHUB_TOKEN }}
     version: latest # NOTE: we recommend pinning to a specific version in case of formatting changes
