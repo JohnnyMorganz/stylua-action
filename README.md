@@ -18,6 +18,27 @@ Installs the StyLua binary (from GitHub releases), and caches it. Any StyLua com
     args: --check .
 ```
 
+### Advanced Usage - Skip Running StyLua
+This action can be summarized as 2 main steps
+
+1. Get An Installation Of [StyLua](https://github.com/JohnnyMorganz/StyLua)
+    1a. From the cache
+    1b. If no cache, install + cache it
+2. Run `stylua` with the user-provided `args`
+
+If you would like to keep step 1 but skip step 2 because you want more manual
+control, use `args: false`.
+
+```yaml
+- uses: actions/checkout@v4
+- uses: JohnnyMorganz/stylua-action@v4
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+    version: latest # NOTE: we recommend pinning to a specific version in case of formatting changes
+    # This disables running `stylua`
+    args: false
+```
+
 ### Parameters
 
 #### `token` (Required)

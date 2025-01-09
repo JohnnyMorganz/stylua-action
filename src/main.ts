@@ -56,7 +56,10 @@ async function run(): Promise<void> {
     const args = core.getInput('args')
     core.debug(`Running stylua with arguments: ${args}`)
 
-    await exec(`stylua ${args}`)
+    if (args !== 'false') {
+      await exec(`stylua ${args}`)
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     core.setFailed(error.message)
