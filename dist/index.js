@@ -85,7 +85,9 @@ function run() {
             }
             const args = core.getInput('args');
             core.debug(`Running stylua with arguments: ${args}`);
-            yield (0, exec_1.exec)(`stylua ${args}`);
+            if (args !== 'false') {
+                yield (0, exec_1.exec)(`stylua ${args}`);
+            }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }
         catch (error) {

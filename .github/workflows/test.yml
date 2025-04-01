@@ -35,7 +35,7 @@ jobs:
         with:
           version: ^0.17
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --check ./test
+          args: --check ./test/sample.lua
   smoketest_latest_version_provided:
     runs-on: ubuntu-latest
     steps:
@@ -44,4 +44,27 @@ jobs:
         with:
           version: latest
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --check ./test
+          args: --check ./test/sample.lua
+  # only install / cache the StyLua install, don't run it
+  smoketest_args_false:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy Test File
+        run: |
+          cp ./test/needs_spaces.lua{,.copy}
+
+      - uses: ./
+        with:
+          version: latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: false
+
+      - name: Confirm test file was not changed
+        run: |
+          cmp ./test/needs_spaces.lua{,.copy}
+
+      - name: Can run stylua independently
+        run: |
+          stylua --version

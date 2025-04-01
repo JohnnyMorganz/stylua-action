@@ -18,6 +18,22 @@ Installs the StyLua binary (from GitHub releases), and caches it. Any StyLua com
     args: --check .
 ```
 
+If you would just like to install `stylua`, but not run it (e.g., since it is used as part of a wider CI script), then
+you can set `args: false`:
+
+```yaml
+- uses: actions/checkout@v4
+- uses: JohnnyMorganz/stylua-action@v4
+  with:
+    token: ${{ secrets.GITHUB_TOKEN }}
+    version: latest # NOTE: we recommend pinning to a specific version in case of formatting changes
+    # This disables running `stylua`
+    args: false
+  # Run stylua independently
+- run: |
+    stylua --version
+```
+
 ### Parameters
 
 #### `token` (Required)
@@ -26,7 +42,7 @@ GitHub token. Required since the binary is downloaded from GitHub releases (to s
 
 #### `args` (Required)
 
-The arguments to pass to the StyLua binary
+The arguments to pass to the StyLua binary. If you don't want to run the binary, set `args: false`.
 
 #### `version` (Required)
 
