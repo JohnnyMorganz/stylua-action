@@ -64,3 +64,7 @@ jobs:
       - name: Confirm test file was not changed
         run: |
           cmp ./test/needs_spaces.lua{,.copy}
+
+      - name: Can run stylua independently
+        run: |
+          stylua --version
